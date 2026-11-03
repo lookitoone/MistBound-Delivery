@@ -9,7 +9,7 @@ async function init(){try{
  if(!response.ok)throw Error('배포 정보를 불러오지 못했습니다. 잠시 후 다시 접속해 주세요.');
  const envelope=await response.text();if(envelope.length>65536)throw Error('배포 정보 크기 오류');
  const data=await metadata(JSON.parse(envelope),key),file=data.installer;
- if(data.schema!==1||!/^\d+\.\d+\.\d+$/.test(data.version)||!validFile(file)||!validFile({size:file.encrypted_size,sha256:file.encrypted_sha256})||!Array.isArray(file.parts)||!file.parts.length||file.parts.length>32)throw Error('배포 파일 정보 오류');
+ if(data.schema!==1||!/^\d+\.\d+\.\d+$/.test(data.version)||!validFile(file)||!validFile({size:file.encrypted_size,sha256:file.encrypted_sha256})||!Array.isArray(file.parts)||!file.parts.length||file.parts.length>64)throw Error('배포 파일 정보 오류');
  let total=0;for(const part of file.parts){if(!validFile(part)||!/^v[0-9.]+-installer-\d{3}\.mbpart$/.test(part.file))throw Error('배포 파일 경로 오류');total+=part.size;}
  if(total!==file.encrypted_size)throw Error('배포 파일 크기 오류');
  release=data;document.querySelector('#version').textContent='v'+data.version;button.textContent='Windows용 다운로드';button.disabled=false;status.textContent='로그인 없이 다운로드할 수 있습니다.';
