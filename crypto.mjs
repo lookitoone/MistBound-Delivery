@@ -15,7 +15,8 @@ export async function metadata(envelope,key){
  return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(body));
 }
 export async function decryptPackage(bytes,key){
- const data=new Uint8Array(bytes);if(data.length<88||data.length%16!==8||new TextDecoder().decode(data.subarray(0,8))!=='MBLINK01')return fail();
+ // Reuse a view instead of copying the entire ~190MB installer.
+ const data=ArrayBuffer.isView(bytes)?new Uint8Array(bytes.buffer,bytes.byteOffset,bytes.byteLength):new Uint8Array(bytes);if(data.length<88||data.length%16!==8||new TextDecoder().decode(data.subarray(0,8))!=='MBLINK01')return fail();
  const source=await crypto.subtle.importKey('raw',key,'HKDF',false,['deriveBits']);
  const derived=new Uint8Array(await crypto.subtle.deriveBits({name:'HKDF',hash:'SHA-256',salt:data.subarray(8,24),info:utf8.encode('MistBound shared link package v1')},source,512));
  const tagKey=await crypto.subtle.importKey('raw',derived.subarray(32),{name:'HMAC',hash:'SHA-256'},false,['verify']);
